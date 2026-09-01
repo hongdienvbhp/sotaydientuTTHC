@@ -10,3 +10,25 @@
 @media(max-width:560px){.cover-title{top:22%}.cover-title p{font-size:14px}.cover-illustration{inset:45% 0 0}.phone{height:60%;bottom:15%}.cover-support{bottom:3%;width:33%}.cover-qr{right:3%}.open-book{top:46%}.app-guide{grid-template-columns:1fr}.app-guide a{padding:7px}.app-guide img{width:42px;height:42px}.smart-layout{grid-template-columns:1fr}.smart-qr{order:-1}.smart-qr img{width:150px;max-height:275px}.center-card{grid-template-columns:1fr 86px}.center-card img{width:86px;height:86px}}
 .cover-clickable{cursor:pointer}.cover-clickable:focus-visible{outline:4px solid #ffd45e;outline-offset:5px}.cover-clickable:hover{box-shadow:8px 11px 0 #001848,12px 18px 48px rgba(0,0,0,.7),0 0 0 3px rgba(89,196,255,.3),inset 0 0 0 1px rgba(255,255,255,.25)}.cover-contact{position:absolute;z-index:5;left:4%;bottom:7%;width:50%;display:grid;gap:7px;color:#fff;text-shadow:0 1px 4px #00123f}.cover-contact span{font:700 6px/1.35 "Be Vietnam Pro"}.cover-contact strong{font-size:7px}.cover-qr{right:5%;bottom:6.5%;gap:4px}.cover-qr>img{display:block;width:76px;height:auto;background:#fff;border:4px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.4)}.cover-qr span{font-size:6px}.open-book{left:50%;right:auto;top:auto;bottom:1.5%;transform:translateX(-50%);width:max-content;max-width:88%;padding:6px 13px;font-size:6.5px;pointer-events:none}.open-book b{font-size:13px;vertical-align:-1px}.cover-clickable:active{transform:scale(.992)}
 @media(max-width:560px){.cover-qr{right:4%;bottom:7%}.cover-qr>img{width:70px}.cover-contact{bottom:7.5%}.open-book{top:auto;bottom:1.7%}}
+
+/* Hiệu ứng lật trang: rê chuột để hé mép, click/chạm để chuyển trang. */
+.page-right{transform-style:preserve-3d;transform-origin:left center;will-change:transform}
+.page-edge{position:absolute;z-index:7;top:72px;bottom:50px;width:34px;border:0;background:transparent;color:#0b58b8;cursor:pointer;padding:0;opacity:.2;transition:opacity .2s,filter .2s}
+.page-edge span{position:absolute;top:50%;display:grid;place-items:center;width:25px;height:48px;margin-top:-24px;border:1px solid rgba(12,87,184,.2);background:rgba(255,255,255,.72);box-shadow:0 4px 14px rgba(22,54,97,.12);font-size:24px}
+.page-edge-prev{left:0}.page-edge-prev span{left:0;border-radius:0 22px 22px 0}
+.page-edge-next{right:0}.page-edge-next span{right:0;border-radius:22px 0 0 22px}
+.page-edge:hover,.page-edge:focus-visible{opacity:1;filter:drop-shadow(0 0 8px rgba(13,96,194,.24));outline:0}
+.page-edge:disabled{opacity:0;cursor:default;pointer-events:none}
+.page-right:has(.page-edge-next:hover){box-shadow:inset -24px 0 28px -28px rgba(0,52,120,.75)}
+.page-right:has(.page-edge-prev:hover){box-shadow:inset 24px 0 28px -28px rgba(0,52,120,.75)}
+.page-right.flipping-next{z-index:6;animation:pageFlipNext .52s cubic-bezier(.4,0,.2,1)}
+.page-right.flipping-prev{z-index:6;animation:pageFlipPrev .52s cubic-bezier(.4,0,.2,1)}
+.page-right.flipping-next:before,.page-right.flipping-prev:before{content:"";position:absolute;z-index:9;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(226,218,204,.92),rgba(255,255,255,.98) 24%,rgba(237,229,216,.92));box-shadow:-18px 0 28px rgba(24,35,52,.28)}
+.page-right.flipping-next:before{transform-origin:left center;animation:pageSheetNext .52s cubic-bezier(.4,0,.2,1)}
+.page-right.flipping-prev:before{transform-origin:right center;animation:pageSheetPrev .52s cubic-bezier(.4,0,.2,1)}
+@keyframes pageFlipNext{0%,100%{transform:rotateY(0)}45%{transform:rotateY(-7deg) translateX(-5px)}55%{transform:rotateY(5deg) translateX(3px)}}
+@keyframes pageFlipPrev{0%,100%{transform:rotateY(0)}45%{transform:rotateY(7deg) translateX(5px)}55%{transform:rotateY(-5deg) translateX(-3px)}}
+@keyframes pageSheetNext{0%{opacity:0;transform:perspective(1200px) rotateY(88deg)}45%{opacity:1;transform:perspective(1200px) rotateY(24deg)}100%{opacity:0;transform:perspective(1200px) rotateY(-82deg)}}
+@keyframes pageSheetPrev{0%{opacity:0;transform:perspective(1200px) rotateY(-88deg)}45%{opacity:1;transform:perspective(1200px) rotateY(-24deg)}100%{opacity:0;transform:perspective(1200px) rotateY(82deg)}}
+@media(max-width:850px){.page-edge{top:64px;bottom:48px;width:28px}.page-edge span{width:22px;height:42px;font-size:21px}}
+@media(prefers-reduced-motion:reduce){.page-right.flipping-next,.page-right.flipping-prev,.page-right.flipping-next:before,.page-right.flipping-prev:before{animation-duration:.01ms}}
