@@ -1,12 +1,180 @@
-const state={items:[],filtered:[],group:"Tất cả",query:"",page:0,perPage:8,detail:null};
-const $=s=>document.querySelector(s);const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));const normal=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-async function init(){state.items=(await fetch("data/procedures.json").then(r=>r.json())).filter(x=>x.pdf);const groups=["Tất cả",...new Set(state.items.map(x=>x.group))];$("#groupFilters").innerHTML=groups.map((g,i)=>`<button type="button" data-group="${esc(g)}" class="${i===0?"active":""}"><span>${esc(g)}</span></button>`).join("");bind();filterAndRender()}
-function bind(){$("#openBook").onclick=openBook;$("#closeBook").onclick=closeBook;$("#homeTool").onclick=closeBook;$("#searchTool").onclick=()=>{openBook();setTimeout(()=>$("#search").focus(),200)};$("#fullscreenTool").onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();$("#introNav").onclick=e=>{const b=e.target.closest("button[data-intro]");if(b)showIntro(b.dataset.intro)};$("#search").oninput=e=>{state.query=normal(e.target.value);state.page=0;state.detail=null;filterAndRender()};$("#groupFilters").onclick=e=>{const b=e.target.closest("button[data-group]");if(!b)return;state.group=b.dataset.group;state.page=0;state.detail=null;document.querySelectorAll("#groupFilters button").forEach(x=>x.classList.toggle("active",x===b));filterAndRender()};$("#procedureList").onclick=e=>{const row=e.target.closest(".procedure-row");if(row)showDetail(Number(row.dataset.id))};$("#prevPage").onclick=()=>{if(state.detail){hideDetail();return}if(state.page>0){state.page--;renderList()}};$("#nextPage").onclick=()=>{if(state.detail)return;const pages=Math.ceil(state.filtered.length/state.perPage);if(state.page<pages-1){state.page++;renderList()}};document.addEventListener("keydown",e=>{if(e.key==="Escape")state.detail?hideDetail():closeBook();if(e.key==="ArrowLeft")$("#prevPage").click();if(e.key==="ArrowRight")$("#nextPage").click()})}
-function openBook(){$("#cover").hidden=true;$("#book").hidden=false}function closeBook(){$("#book").hidden=true;$("#cover").hidden=false;state.detail=null;$("#detailView").hidden=true;$("#listView").hidden=false}
-function filterAndRender(){state.filtered=state.items.filter(x=>(state.group==="Tất cả"||x.group===state.group)&&(!state.query||x.search.includes(state.query)));renderList()}
-function renderList(){$("#listView").hidden=false;$("#detailView").hidden=true;state.detail=null;const pages=Math.max(1,Math.ceil(state.filtered.length/state.perPage));state.page=Math.min(state.page,pages-1);const list=state.filtered.slice(state.page*state.perPage,(state.page+1)*state.perPage);$("#contentTitle").textContent=state.group==="Tất cả"?"Tất cả thủ tục":state.group;$("#groupLabel").textContent="DANH MỤC THỦ TỤC HÀNH CHÍNH";$("#resultCount").textContent=`${state.filtered.length} thủ tục`;$("#procedureList").innerHTML=list.map(x=>`<div class="procedure-row" data-id="${x.id}" tabindex="0"><span class="num">${String(x.id).padStart(2,"0")}</span><div><h3>${esc(x.name)}</h3><small>${esc(x.code)} · ${esc(x.field)} · ${esc(x.level)}</small></div><span class="go">›</span></div>`).join("");$("#emptyState").hidden=!!list.length;$("#pageIndicator").textContent=`${String(state.page+2).padStart(2,"0")} / ${String(pages+1).padStart(2,"0")}`;$("#prevPage").disabled=state.page===0;$("#nextPage").disabled=state.page>=pages-1;document.querySelectorAll(".procedure-row").forEach(r=>r.onkeydown=e=>{if(e.key==="Enter")showDetail(Number(r.dataset.id))})}
-function section(title,text){return text?`<section class="detail-section"><h4>${title}</h4><pre>${esc(text)}</pre></section>`:""}
-const intros={benefits:{label:"DỊCH VỤ CÔNG TRỰC TUYẾN",title:"Nhanh chóng, thuận tiện 24/7",html:`<div class="intro-hero"><h3>Lợi ích của dịch vụ công trực tuyến</h3></div><p class="intro-copy">Dịch vụ công trực tuyến giúp người dân và doanh nghiệp thực hiện thủ tục hành chính thuận tiện hơn, giảm thời gian đi lại và chủ động theo dõi tiến độ xử lý hồ sơ.</p><div class="intro-points"><div><strong>Nộp hồ sơ mọi lúc, mọi nơi</strong><span>Thực hiện trên thiết bị có kết nối Internet, không phụ thuộc giờ làm việc.</span></div><div><strong>Tiết kiệm thời gian và chi phí</strong><span>Giảm việc đi lại, chờ đợi và chuẩn bị lại hồ sơ.</span></div><div><strong>Công khai, minh bạch</strong><span>Theo dõi trạng thái hồ sơ và nhận thông báo trong quá trình giải quyết.</span></div></div>`},portal:{label:"CỔNG DỊCH VỤ CÔNG QUỐC GIA",title:"Đăng nhập bằng tài khoản VNeID",html:`<div class="intro-hero"><h3>Thực hiện TTHC trực tuyến</h3></div><p class="intro-copy">Truy cập Cổng Dịch vụ công Quốc gia, chọn đăng nhập bằng tài khoản định danh điện tử VNeID và làm theo hướng dẫn.</p><div class="intro-points"><div><strong>1. Chuẩn bị tài khoản</strong><span>Cài đặt VNeID, kích hoạt tài khoản và kiểm tra thông tin cá nhân.</span></div><div><strong>2. Tìm thủ tục</strong><span>Tra cứu theo tên hoặc mã thủ tục, chọn cơ quan thực hiện tại địa phương.</span></div><div><strong>3. Nộp và theo dõi hồ sơ</strong><span>Khai biểu mẫu, tải thành phần hồ sơ, thanh toán trực tuyến nếu có và theo dõi kết quả.</span></div></div><div class="qr-card"><img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fqr.haiphong.gov.vn%2F" alt="QR Hải Phòng"><a href="https://qr.haiphong.gov.vn/" target="_blank" rel="noopener">QUÉT QR HOẶC MỞ CỔNG QR HẢI PHÒNG →</a></div>`},center:{label:"THÔNG TIN LIÊN HỆ",title:"Trung tâm Phục vụ HCC xã Vĩnh Bảo",html:`<div class="intro-hero"><h3>Phục vụ người dân và doanh nghiệp</h3></div><div class="center-card"><div class="contact-line"><strong>TRUNG TÂM PHỤC VỤ HÀNH CHÍNH CÔNG XÃ VĨNH BẢO</strong><br>📍 Đường 20/8, xã Vĩnh Bảo, thành phố Hải Phòng<br>☎ Hotline: <strong>0823.919.686</strong><br>🌐 qr.haiphong.gov.vn</div><img src="assets/trung-tam-hanh-chinh-vinh-bao.png" alt="Trung tâm Phục vụ hành chính công xã Vĩnh Bảo"></div><p class="intro-copy">Trung tâm hướng dẫn, tiếp nhận, số hóa và trả kết quả giải quyết thủ tục hành chính; hỗ trợ người dân sử dụng dịch vụ công trực tuyến và tra cứu tiến độ hồ sơ.</p><div class="qr-card"><img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fqr.haiphong.gov.vn%2F" alt="QR Hải Phòng"><a href="https://qr.haiphong.gov.vn/" target="_blank" rel="noopener">TRUY CẬP HỆ THỐNG QR HẢI PHÒNG →</a></div>`}};
-function showIntro(key){const x=intros[key];if(!x)return;state.detail={intro:true};$("#listView").hidden=true;$("#detailView").hidden=false;$("#groupLabel").textContent=x.label;$("#contentTitle").textContent=x.title;$("#resultCount").textContent="XÃ VĨNH BẢO";$("#detailView").innerHTML=`<button class="back-link" type="button">‹ QUAY LẠI MỤC LỤC</button>${x.html}`;$(".back-link").onclick=hideDetail;$("#pageIndicator").textContent="GIỚI THIỆU";$("#prevPage").disabled=false;$("#nextPage").disabled=true}
-function showDetail(id){const x=state.items.find(i=>i.id===id),d=x.detail||{};state.detail=x;$("#listView").hidden=true;$("#detailView").hidden=false;$("#groupLabel").textContent=`THỦ TỤC SỐ ${String(x.id).padStart(2,"0")}`;$("#contentTitle").textContent="Hướng dẫn thực hiện";$("#resultCount").textContent=x.code;$("#detailView").innerHTML=`<button class="back-link" type="button">‹ QUAY LẠI MỤC LỤC</button><div class="detail-code">${esc(x.code)}</div><h3>${esc(x.name)}</h3><div class="detail-tags"><span>${esc(x.field)}</span><span>${esc(x.level)}</span></div>${x.pdf?(d.note?'<p class="detail-warning">Có PDF nguồn; phần xem nhanh chưa trích xuất được.</p>':""):'<p class="detail-warning">Thư mục nguồn chưa có PDF chi tiết cho thủ tục này.</p>'}<div class="detail-actions">${x.pdf?`<a class="secondary" href="${encodeURI(x.pdf)}" target="_blank">MỞ PDF</a>`:""}<a href="${x.online}" target="_blank" rel="noopener">CỔNG DỊCH VỤ CÔNG</a></div>${section("Trình tự thực hiện",d.sequence)}${section("Thành phần hồ sơ",d.documents)}${section("Cách thức thực hiện",d.methods)}${section("Căn cứ pháp lý",d.legal)}`;$(".back-link").onclick=hideDetail;$("#pageIndicator").textContent=`TTHC ${String(x.id).padStart(2,"0")}`;$("#prevPage").disabled=false;$("#nextPage").disabled=true}
-function hideDetail(){state.detail=null;renderList()}init().catch(err=>{$("#procedureList").innerHTML=`<p class="detail-warning">Không tải được dữ liệu: ${esc(err.message)}</p>`});
+const state = { items: [], filtered: [], page: 1, perPage: 10 };
+const $ = (selector) => document.querySelector(selector);
+const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+const normalize = (value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().trim();
+
+function uniqueValues(field) {
+  return [...new Set(state.items.map((item) => item[field]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "vi"));
+}
+
+function populateSelect(id, values) {
+  const select = $(id);
+  values.forEach((value) => select.insertAdjacentHTML("beforeend", `<option value="${esc(value)}">${esc(value)}</option>`));
+}
+
+function bindEvents() {
+  ["#search", "#groupFilter", "#fieldFilter", "#levelFilter"].forEach((id) => {
+    $(id).addEventListener(id === "#search" ? "input" : "change", () => {
+      state.page = 1;
+      filterAndRender();
+    });
+  });
+  $("#clearSearch").addEventListener("click", () => { $("#search").value = ""; $("#search").focus(); state.page = 1; filterAndRender(); });
+  $("#resetFilters").addEventListener("click", resetFilters);
+  $("#emptyReset").addEventListener("click", resetFilters);
+  $("#prevPage").addEventListener("click", () => changePage(-1));
+  $("#nextPage").addEventListener("click", () => changePage(1));
+  $("#procedureList").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-detail-id]");
+    if (button) openDetail(Number(button.dataset.detailId));
+  });
+  $("#closeDialog").addEventListener("click", closeDetail);
+  $("#detailDialog").addEventListener("click", (event) => { if (event.target === $("#detailDialog")) closeDetail(); });
+  $("#increaseFont").addEventListener("click", () => changeFont(1));
+  $("#decreaseFont").addEventListener("click", () => changeFont(-1));
+  $("#contrastToggle").addEventListener("click", toggleContrast);
+  $("#backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  window.addEventListener("popstate", syncDetailFromUrl);
+}
+
+function resetFilters() {
+  $("#search").value = "";
+  $("#groupFilter").value = "";
+  $("#fieldFilter").value = "";
+  $("#levelFilter").value = "";
+  state.page = 1;
+  filterAndRender();
+}
+
+function filterAndRender() {
+  const query = normalize($("#search").value);
+  const group = $("#groupFilter").value;
+  const field = $("#fieldFilter").value;
+  const level = $("#levelFilter").value;
+  $("#clearSearch").hidden = !query;
+  state.filtered = state.items.filter((item) => {
+    const haystack = normalize([item.name, item.code, item.field, item.group, item.level, item.search].join(" "));
+    return (!query || query.split(/\s+/).every((term) => haystack.includes(term))) && (!group || item.group === group) && (!field || item.field === field) && (!level || item.level === level);
+  });
+  renderList();
+}
+
+function renderList() {
+  const pages = Math.max(1, Math.ceil(state.filtered.length / state.perPage));
+  state.page = Math.min(state.page, pages);
+  const start = (state.page - 1) * state.perPage;
+  const visible = state.filtered.slice(start, start + state.perPage);
+  $("#resultCount").textContent = `${state.filtered.length} thủ tục phù hợp`;
+  $("#procedureList").innerHTML = visible.map((item) => `
+    <article class="procedure-card">
+      <div class="procedure-number" aria-hidden="true">${String(item.id).padStart(2, "0")}</div>
+      <div class="procedure-content">
+        <div class="procedure-meta"><span>${esc(item.code)}</span><span>${esc(item.field)}</span><span>${esc(item.level)}</span></div>
+        <h3>${esc(item.name)}</h3>
+        <p>${item.pdfAvailable ? "Có tài liệu PDF hướng dẫn chi tiết." : "Chưa có tài liệu PDF trong Sổ tay; có thể tra cứu trên Cổng Dịch vụ công."}</p>
+        <div class="procedure-actions">
+          <button class="button button-primary" type="button" data-detail-id="${item.id}">Xem hướng dẫn</button>
+          ${item.online ? `<a class="external-link" href="${esc(item.online)}" target="_blank" rel="noopener noreferrer">Mở Cổng Dịch vụ công <span aria-hidden="true">↗</span><span class="sr-only"> (mở trang bên ngoài)</span></a>` : ""}
+        </div>
+      </div>
+    </article>`).join("");
+  $("#emptyState").hidden = state.filtered.length !== 0;
+  $("#pagination").hidden = state.filtered.length <= state.perPage;
+  $("#pageInfo").textContent = `Trang ${state.page} / ${pages}`;
+  $("#prevPage").disabled = state.page <= 1;
+  $("#nextPage").disabled = state.page >= pages;
+}
+
+function changePage(delta) {
+  state.page += delta;
+  renderList();
+  $("#catalogue").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function section(title, text) {
+  if (!text) return "";
+  const lines = String(text).split("\n").map((line) => line.trim()).filter(Boolean);
+  return `<section class="detail-section"><h3>${esc(title)}</h3><div class="source-text">${lines.map((line) => `<p>${esc(line)}</p>`).join("")}</div></section>`;
+}
+
+function openDetail(id, updateHistory = true) {
+  const item = state.items.find((entry) => entry.id === id);
+  if (!item) return;
+  const detail = item.detail || {};
+  $("#detailCode").textContent = `${item.code} · ${item.field} · ${item.level}`;
+  $("#detailTitle").textContent = item.name;
+  $("#detailBody").innerHTML = `
+    <div class="detail-warning" role="note"><strong>Lưu ý:</strong> Nội dung dưới đây dùng để chuẩn bị và tham khảo. Trước khi nộp, người dùng cần kiểm tra thông tin đang công bố trên Cổng Dịch vụ công.</div>
+    <div class="detail-actions">
+      ${item.pdfAvailable ? `<a class="button button-secondary" href="${encodeURI(item.pdf)}" target="_blank">Xem PDF hướng dẫn</a>` : ""}
+      ${item.online ? `<a class="button button-primary" href="${esc(item.online)}" target="_blank" rel="noopener noreferrer">Nộp hồ sơ trên Cổng DVC <span aria-hidden="true">↗</span></a>` : ""}
+      <button class="button button-print" type="button" onclick="window.print()">In hướng dẫn</button>
+    </div>
+    ${section("Trình tự thực hiện", detail.sequence)}
+    ${section("Thành phần hồ sơ", detail.documents)}
+    ${section("Cách thức thực hiện, thời hạn và phí", detail.methods)}
+    ${section("Căn cứ pháp lý ghi trong tài liệu nguồn", detail.legal)}
+    <section class="detail-section source-note"><h3>Nguồn và phạm vi sử dụng</h3><p>Nội dung được tổng hợp từ tài liệu PDF hiện có trong Sổ tay và liên kết đến Cổng Dịch vụ công Quốc gia. Sổ tay không tiếp nhận hồ sơ và không thay thế công bố của cơ quan có thẩm quyền.</p></section>`;
+  $("#detailDialog").showModal();
+  document.body.classList.add("dialog-open");
+  if (updateHistory) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tthc", item.code);
+    history.pushState({ id }, "", url);
+  }
+}
+
+function closeDetail(updateHistory = true) {
+  if ($("#detailDialog").open) $("#detailDialog").close();
+  document.body.classList.remove("dialog-open");
+  if (updateHistory) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("tthc");
+    history.pushState({}, "", url);
+  }
+}
+
+function syncDetailFromUrl() {
+  const code = new URL(window.location.href).searchParams.get("tthc");
+  const item = state.items.find((entry) => entry.code === code);
+  if (item) openDetail(item.id, false); else closeDetail(false);
+}
+
+function changeFont(direction) {
+  const root = document.documentElement;
+  const current = Number(root.dataset.fontScale || 100);
+  const next = Math.min(125, Math.max(90, current + direction * 10));
+  root.dataset.fontScale = next;
+  root.style.fontSize = `${next}%`;
+}
+
+function toggleContrast() {
+  const active = document.body.classList.toggle("high-contrast");
+  $("#contrastToggle").setAttribute("aria-pressed", String(active));
+}
+
+async function init() {
+  try {
+    const [dataResponse, manifestResponse] = await Promise.all([
+      fetch("data/procedures.json"),
+      fetch("data/pdf-manifest.json")
+    ]);
+    if (!dataResponse.ok || !manifestResponse.ok) throw new Error("Không tải được dữ liệu Sổ tay");
+    const availablePdfs = new Set(await manifestResponse.json());
+    state.items = (await dataResponse.json()).map((item) => ({
+      ...item,
+      pdfAvailable: Boolean(item.pdf && availablePdfs.has(item.pdf))
+    }));
+    populateSelect("#groupFilter", uniqueValues("group"));
+    populateSelect("#fieldFilter", uniqueValues("field"));
+    populateSelect("#levelFilter", uniqueValues("level"));
+    bindEvents();
+    filterAndRender();
+    syncDetailFromUrl();
+  } catch (error) {
+    $("#procedureList").innerHTML = `<div class="error-state"><strong>Không tải được dữ liệu thủ tục.</strong><p>Vui lòng tải lại trang hoặc liên hệ Trung tâm để được hỗ trợ.</p></div>`;
+    console.error(error);
+  }
+}
+
+init();
