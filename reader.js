@@ -1,6 +1,6 @@
 // Native page-turn animation; no proprietary flipbook assets or dependencies.
 let turning=false;
-function cancelPageTurn(){turning=false;const page=$(".page-right");if(page){page.getAnimations().forEach(animation=>animation.cancel());page.classList.remove("is-turning","turn-forward","turn-back")}}
+function cancelPageTurn(){turning=false;const page=$(".page-right");if(page){page.getAnimations().forEach(animation=>animation.cancel());page.style.transform="rotateY(0deg) translateZ(0) skewY(0deg)";page.style.filter="";page.style.boxShadow="";page.classList.remove("is-turning","turn-forward","turn-back")}}
 function isLocalPreview(){return ['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).get('preview')==='congkhai'}
 function safeLink(value,local=false){
   if(typeof value!=="string"||!value.trim())return "#";
@@ -18,11 +18,13 @@ async function turnPage(direction){
     if(!reduce){
       page.classList.add("is-turning",direction>0?"turn-forward":"turn-back");
       const sign=direction>0?-1:1;
-      await page.animate([
+      const outgoing=page.animate([
         {transform:"rotateY(0deg) translateZ(0) skewY(0deg)",filter:"brightness(1)",boxShadow:"0 0 0 rgba(0,0,0,0)"},
         {transform:`rotateY(${sign*10}deg) translateZ(7px) skewY(${sign*-0.7}deg)`,filter:"brightness(.97)",boxShadow:`${sign*-12}px 8px 24px rgba(18,35,66,.18)`},
         {transform:`rotateY(${sign*38}deg) translateZ(15px) skewY(${sign*-1.3}deg)`,filter:"brightness(.84)",boxShadow:`${sign*-25}px 12px 38px rgba(18,35,66,.3)`}
       ],{duration:360,easing:"cubic-bezier(.22,.7,.24,1)",fill:"forwards"}).finished;
+      await outgoing;
+      page.getAnimations().forEach(animation=>animation.cancel());
     }
     state.page=next;renderList();
     if(!reduce){
