@@ -1,0 +1,9 @@
+.env*
+!.env.example
+node_modules/
+__pycache__/
+.secrets/
+.staging/
+*.log
+tools/upgrade-reader.cjs
+Prompt.docx

@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {convert,normalize} from './sync-congkhai.mjs';
+const record={id:'uuid',code:'1.01',name:'Đất đai',publication_status:'published',effect_status:'effective',service_level:'full'};
+test('chỉ lấy đã công khai và còn hiệu lực',()=>{const r=convert({procedures:[record,{...record,code:'2',publication_status:'draft'},{...record,code:'3',effect_status:'repealed'}]});assert.equal(r.items.length,1);assert.equal(r.report.excluded.length,2)});
+test('không chấp nhận summary thiếu trạng thái công khai',()=>assert.equal(convert({procedures:[{code:'1',name:'Tên',effect_status:'effective'}]}).items.length,0));
+test('báo trùng mã, giữ id và không ghép PDF cũ',()=>{const r=convert({procedures:[record,record]},[{id:42,code:'1.01',pdf:'old.pdf'}]);assert.equal(r.items[0].id,42);assert.equal(r.items[0].pdf,'');assert.equal(r.report.invalid.length,1)});
+test('chặn javascript URL và bỏ dữ liệu riêng ngoài whitelist',()=>{const r=convert({procedures:[{...record,online_submission_url:'javascript:alert(1)',private_note:'secret'}]});assert.equal(r.items[0].online,'');assert.ok(!JSON.stringify(r.items).includes('secret'))});
+test('ghép thành phần hồ sơ đúng procedure_id',()=>{const r=convert({procedures:[record],procedure_documents:[{procedure_id:'uuid',name:'Tài liệu A'},{procedure_id:'other',name:'Tài liệu B'}]});assert.equal(r.items[0].detail.documents,'Tài liệu A')});
+test('tìm tiếng Việt không dấu',()=>assert.equal(normalize('Đất đai'),'dat dai'));
+test('master xác minh chỉ thành bản chờ duyệt',()=>{const r=convert({format:'bangniemyet-vinhbao-master-data',thuTuc:[{ma:'1',ten:'Tên',daXacMinh:true,verificationStatus:'official_city_decision_commune_reception',sourceAttachmentUrl:'https://example.gov.vn/source.pdf'},{ma:'2',ten:'Nháp',daXacMinh:false}]});assert.equal(r.items.length,1);assert.equal(r.items[0].source.publicationStatus,'pending_approval');assert.equal(r.report.excluded.length,1)});
