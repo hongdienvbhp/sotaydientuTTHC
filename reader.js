@@ -20,9 +20,9 @@ async function turnPage(direction){
       const sign=direction>0?-1:1;
       const outgoing=page.animate([
         {transform:"rotateY(0deg) translateZ(0) skewY(0deg)",filter:"brightness(1)",boxShadow:"0 0 0 rgba(0,0,0,0)"},
-        {transform:`rotateY(${sign*16}deg) translateZ(9px) skewY(${sign*-0.9}deg)`,filter:"brightness(.96)",boxShadow:`${sign*-16}px 8px 28px rgba(18,35,66,.22)`},
-        {transform:`rotateY(${sign*82}deg) translateZ(20px) skewY(${sign*-1.8}deg)`,filter:"brightness(.72)",boxShadow:`${sign*-34}px 14px 44px rgba(18,35,66,.38)`}
-      ],{duration:520,easing:"cubic-bezier(.22,.7,.24,1)",fill:"forwards"}).finished;
+        {transform:`rotateY(${sign*10}deg)`,filter:"brightness(.98)",boxShadow:`${sign*-8}px 6px 16px rgba(18,35,66,.12)`},
+        {transform:`rotateY(${sign*75}deg)`,filter:"brightness(.78)",boxShadow:`${sign*-18}px 8px 26px rgba(18,35,66,.22)`}
+      ],{duration:240,easing:"ease-in",fill:"forwards"}).finished;
       await outgoing;
       page.getAnimations().forEach(animation=>animation.cancel());
     }
@@ -30,10 +30,10 @@ async function turnPage(direction){
     if(!reduce){
       const sign=direction>0?-1:1;
       await page.animate([
-        {transform:`rotateY(${sign*-82}deg) translateZ(20px) skewY(${sign*1.8}deg)`,filter:"brightness(.72)",boxShadow:`${sign*34}px 14px 44px rgba(18,35,66,.38)`},
-        {transform:`rotateY(${sign*-16}deg) translateZ(9px) skewY(${sign*0.9}deg)`,filter:"brightness(.96)",boxShadow:`${sign*16}px 8px 28px rgba(18,35,66,.22)`},
+        {transform:`rotateY(${sign*-75}deg)`,filter:"brightness(.78)",boxShadow:`${sign*18}px 8px 26px rgba(18,35,66,.22)`},
+        {transform:`rotateY(${sign*-10}deg)`,filter:"brightness(.98)",boxShadow:`${sign*8}px 6px 16px rgba(18,35,66,.12)`},
         {transform:"rotateY(0deg) translateZ(0) skewY(0deg)",filter:"brightness(1)",boxShadow:"0 0 0 rgba(0,0,0,0)"}
-      ],{duration:420,easing:"cubic-bezier(.2,.65,.25,1)",fill:"none"}).finished;
+      ],{duration:280,easing:"ease-out",fill:"none"}).finished;
     }
   }finally{page.classList.remove("is-turning","turn-forward","turn-back");turning=false}
 }
