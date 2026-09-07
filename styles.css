@@ -169,7 +169,10 @@ to{opacity:1;transform:none}
 .smart-steps{padding-left:20px;font-size:13px;line-height:1.7}
 .privacy-note{font-size:12px;line-height:1.7;background:#edf5ff;padding:12px}
 @media(max-width:560px){.app-guide,.smart-layout{grid-template-columns:1fr}.smart-qr{max-width:170px;justify-self:center}}
-.page-right{transform-origin:left center;backface-visibility:hidden}
+.page-right{transform-origin:left center;backface-visibility:hidden;transform-style:preserve-3d;will-change:transform,filter;box-shadow:0 0 0 rgba(18,35,66,0);isolation:isolate}
+.page-right:before{content:"";position:absolute;z-index:3;inset:0;pointer-events:none;opacity:0;background:linear-gradient(90deg,rgba(28,48,84,.3),transparent 16%,transparent 76%,rgba(255,255,255,.34)),linear-gradient(105deg,transparent 42%,rgba(7,45,105,.2) 49%,transparent 57%);mix-blend-mode:multiply;transition:opacity .15s ease}
+.page-right.is-turning:before{opacity:1}
+.page-right.turn-forward:after,.page-right.turn-back:after{background:repeating-linear-gradient(0deg,rgba(113,84,36,.02) 0 1px,transparent 1px 4px),linear-gradient(90deg,transparent 55%,rgba(255,255,255,.2) 78%,rgba(34,54,90,.18) 100%)}
 .book-list{overflow:auto;max-height:100%;padding-bottom:8px}
 #listView{height:calc(100% - 92px);overflow:auto}
 .page-left{overflow:auto}
