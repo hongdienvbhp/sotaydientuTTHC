@@ -12,4 +12,5 @@ jobs:
           node-version: '22'
       - run: node --check app.js
       - run: node --check reader.js
-      - run: node --test tools/sync-congkhai.test.mjs
+      - run: node --test tools/*.test.mjs
+      - run: node tools/validate-public-data.mjs
