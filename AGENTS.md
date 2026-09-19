@@ -45,3 +45,14 @@ Agent phải:
 - coi GitHub + Issue/PR/Linear là nguồn trạng thái, không dùng lịch sử chat hoặc máy local làm canonical source.
 
 Người dùng không phải tự chạy các thao tác Git thông thường trên nếu agent có quyền thực hiện. Chỉ hỏi người dùng khi cần quyền/xác nhận bắt buộc hoặc có xung đột nghiệp vụ không thể tự quyết an toàn.
+
+
+## Handoff Chat Web ↔ Codex
+
+Mô hình chuẩn: **Chat Web → Linear/GitHub Issue → Codex → PR/CI → Chat Web review**.
+
+- Chat Web chịu trách nhiệm phân tích, chia work package, rà soát bằng chứng và xác định bước tiếp theo.
+- Codex thực thi work package được mô tả trong Issue/PR; không cần nạp toàn bộ lịch sử chat.
+- ChatCode, ChatGPT Work hoặc executor khác nếu thay Codex phải tuân thủ cùng hợp đồng Issue/task → branch → test/CI → PR → handoff.
+- Linear và GitHub Issue/PR là nguồn trạng thái sống; không tạo tracker/file trạng thái trùng lặp nếu chưa có nhu cầu riêng.
+- Khi bắt đầu, đọc Constitution, AGENTS.md, Issue/PR được giao và các file liên quan trực tiếp.
