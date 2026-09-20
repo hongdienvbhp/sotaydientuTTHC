@@ -43,15 +43,18 @@ export function convert(source,previous=[]){
 }
 export function convertMaster(source,previous=[]){
   if(!Array.isArray(source.thuTuc))throw Error('Thiếu thuTuc');
+  if(source.version!==3)throw Error('Canonical contract version phải bằng 3');
+  if(!/^\d{4}\.\d{2}\.\d{2}$/.test(text(source.dataset_version)))throw Error('Canonical contract thiếu dataset_version hợp lệ');
+  if(!/^[0-9a-f]{40}$/.test(text(source.source_commit)))throw Error('Canonical contract thiếu source_commit hợp lệ');
   const allowed=new Set(['official_city_decision_commune_reception','official_commune_evidence_no_later_repeal_in_snapshot']);
   const verified=source.thuTuc.filter(r=>r.daXacMinh===true&&allowed.has(r.verificationStatus)&&url(r.sourceAttachmentUrl));
   // These flags are used only for the internal converter. The output is explicitly pending approval.
   const mapped=verified.map(r=>({id:r.ma,code:r.ma,name:r.ten,fieldName:r.linhVuc,publication_status:'published',effect_status:'effective',authority_name:r.coQuan,processing_time:r.thoiHan,legal_basis:r.quyetDinh,updated_at:r.sourceSnapshotDate}));
   const result=convert({procedures:mapped},previous),byCode=new Map(verified.map(r=>[r.ma,r]));
-  for(const x of result.items){const r=byCode.get(x.code);x.source={project:'CongkhaiTTHC',snapshotDate:r.sourceSnapshotDate,verificationStatus:r.verificationStatus,publicationStatus:'pending_approval',articleUrl:url(r.sourceArticleUrl),attachmentUrl:url(r.sourceAttachmentUrl)};x.receivingScope=text(r.cap);x.detail.note='Bản xem trước từ dữ liệu dự án; chưa phê duyệt công khai trên sổ tay.';}
+  for(const x of result.items){const r=byCode.get(x.code);x.source={project:'BangNiemYetVinhBao',datasetVersion:source.dataset_version,sourceCommit:source.source_commit,snapshotDate:r.sourceSnapshotDate,verificationStatus:r.verificationStatus,publicationStatus:'pending_approval',articleUrl:url(r.sourceArticleUrl),attachmentUrl:url(r.sourceAttachmentUrl)};x.receivingScope=text(r.cap);x.detail.note='Bản xem trước từ dữ liệu dự án; chưa phê duyệt công khai trên sổ tay.';}
   result.report.inputCount=source.thuTuc.length;
   result.report.excluded=source.thuTuc.filter(r=>!verified.includes(r)).map(r=>({code:r.ma,reason:'Chưa đủ dấu vết xác minh nguồn'}));
-  result.report.sourceFormat=source.format;result.report.publicationStatus='pending_approval';
+  result.report.sourceFormat=source.format;result.report.sourceProject='BangNiemYetVinhBao';result.report.datasetVersion=source.dataset_version;result.report.sourceCommit=source.source_commit;result.report.publicationStatus='pending_approval';
   return result;
 }
 export function run(input,output){
